@@ -205,62 +205,23 @@ module Scrumy
         ivar = client.send(method, instance_variable_get("@id"))
       }
     end
-  end
-
-  # Models
-  # ======
-  #
-  # Scrumy defines several models, each of which have a corresponding REST resource.
-  #
-  # * Scrumy (not yet implemented here)
-  # * Sprint
-  # * Story
-  # * Task
-  # * Scrumer
-  # * Snapshot (implemented in client, but not as a model yet)
-  #
-  # For now the models are explicitly defined, but they contain virtually no code
-  # or can act simply as extensions to provide information not contain directly
-  # in the REST resource.
-
-  class Sprint < Scrumy::Model
-    # Specify the parent as `:scrumy` even though we're not specifying it as a 
-    # resource - it'll just act as the root resource.
-    belongs_to :scrumy
-    # `Sprints` have many lazily loaded `Scrumy::Story` objects.
-    lazy_load :stories
     
-    # list "scrumies/:project/:sprints"
-    # show "sprints/:id"
-  end
-  
-  class Story < Scrumy::Model
-    # `Scrumy::Story` objects belong to `Scrumy::Sprint` objects
-    belongs_to :sprint
-    # and can lazy load many `Scrumy::Task` objects
-    lazy_load :tasks
-  end
-  
-  class Task < Scrumy::Model
-    # `Scrumy::Task` objects belong to `Scrumy::Story` objects    
-    belongs_to :story
-    # and can lazy load one `Scrumy::Scrumer`
-    lazy_load :scrumer
-    
-    # This defines a helper method Scrumy::Task`#time`
-    def time
-      # Since time is only in the title text this captures it
-      return 3.0 if !(@title =~ /\((\d+.*)([hHmM].*)\)/)      
-      time, unit = $~.captures
-      # and converts it into hours or fractions thereof
-      unit =~ /m/i ? time.to_f / 60.0 : time.to_f      
+    def self.helper(name, &block)
+      self.send :define_method, name do
+        instance_eval(&block)
+      end
     end
   end
-
-  # While `Scrumy::Tasks` have `Scrumy::Scrumers` the actual resource
-  # reside under the root :scrumy resource, so explicitly load it from there
-  # `#belongs_to` and `#lazy_load` relationships don't have to be bidirectional
-  class Scrumer < Scrumy::Model
-    belongs_to :scrumy
-  end
 end
+ 
+# This is entry point for the DSL that specifies resources
+def resource(name, &block)
+  # It creates a new class based on the resource name scoped tot he Scrumy module
+  klass = Scrumy.const_set(name.to_s.classify, Class.new(Scrumy::Model))
+  # Then executes the block on the class.  The class provides several class
+  # methods for making instances behave correctly.
+  klass.class_exec &block
+end
+
+# Loads in the default resources, see `resources.rb`
+load('resources.rb')
