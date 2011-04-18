@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>scrumy.rb</title>
+  <link rel="stylesheet" href="http://github.com/jashkenas/docco/raw/0.3.0/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>scrumy.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        <p><strong>Scrumy Client</strong> is a Ruby REST client wrapper for <a href="http://apidoc.scrumy.com">Scrumy</a>.</p>
+
+<p>Scrumy Client provides a simple client interface for retrieving Sprints, Stories,
+Tasks, and Scrumers, as well as some tools for generating useful information with
+those objects.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Dependencies'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Dependencies">&#182;</a>
+        </div>
+        <h1>Dependencies</h1>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>We need JSON</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>JSON responses are parsed and turned into the core Scrumy objects, key value
+pairs in the JSON hashes become instance variables in the objects.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;json&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Scrumy Client uses <a href="https://github.com/archiloque/rest-client">rest-client</a>
+for conveniently retrieving REST resources and handling some of the HTTP at a
+higher level.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;rest_client&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>We use <a href="http://as.rubyonrails.org/classes/Inflector.html">ActiveSupport::Inflector</a> to do some of the metaprogramming magic and
+instantiate classes and create methods dynamically.  Inflector helps to
+pluralize, singularize, (de)modularize symbols.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;active_support/inflector&#39;</span>
+
+<span class="k">module</span> <span class="nn">Scrumy</span>
+  <span class="k">class</span> <span class="nc">Client</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Every client request sets the <code>@url</code> instance variable for easy debugging
+Just call client.url to see that last requested URL.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="kp">attr_reader</span> <span class="ss">:url</span>
+    </pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p><code>Scrumy::Clients</code> are initialized with a project name and password.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+      <span class="vi">@project</span><span class="p">,</span> <span class="vi">@password</span> <span class="o">=</span> <span class="n">project</span><span class="p">,</span> <span class="n">password</span>
+    <span class="k">end</span>
+    </pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>Convenience method for retreiving the current sprint, proxies to <code>method_missing</code>
+and returns the <code>Scrumy::Sprint</code> object for the current sprint.  Current sprints
+are complete &ndash; that is the have fully populated instance variables for stories,
+tasks, and scrumers.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">sprint</span>
+      <span class="nb">method_missing</span><span class="p">(</span><span class="ss">:sprint</span><span class="p">,</span> <span class="ss">:current</span><span class="p">)</span>
+    <span class="k">end</span>
+    
+    </pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p>This is the heart of the <code>Scrumy::Client</code> object.  It provides Ghost Methods via the Ruby
+chainsaw, <code>method_missing</code>.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    </pre></div>
+      </td>
+    </tr>
+    <tr id='section-11'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-11">&#182;</a>
+        </div>
+        <p>The magic comes from the fact that the Scrumy REST API uses mostly deterministic URLS
+based on relationships between models.  Scrums have Sprints, Sprints have Stories,
+Stories have Tasks, Tasks have one Scrumer.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-12'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-12">&#182;</a>
+        </div>
+        <p>:current is a special case, ideally it shouldn&rsquo;t be here and we should probably remove it
+for readability&rsquo;s sake, but it does illustrate that the rest of this method works even
+though this REST resource URL can be different</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span> <span class="o">==</span> <span class="ss">:current</span>
+        <span class="vi">@url</span> <span class="o">=</span> <span class="s2">&quot;https://scrumy.com/api/scrumies/</span><span class="si">#{</span><span class="vi">@project</span><span class="si">}</span><span class="s2">/sprints/</span><span class="si">#{</span><span class="n">args</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">to_s</span><span class="si">}</span><span class="s2">.json&quot;</span>
+      <span class="k">else</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p>URLs are constructed from parent of the class corresponding the the desired
+resource and the method as the resource itself.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>        <span class="n">parent</span> <span class="o">=</span> <span class="no">Scrumy</span><span class="o">.</span><span class="n">const_get</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">capitalize</span><span class="o">.</span><span class="n">singularize</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">pluralize</span>
+        <span class="vi">@url</span> <span class="o">=</span> <span class="s2">&quot;https://scrumy.com/api/</span><span class="si">#{</span><span class="n">parent</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">args</span><span class="o">.</span><span class="n">first</span> <span class="o">||</span> <span class="vi">@project</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">.json&quot;</span>
+      <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-14'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>Here we request the resource using the singular of the resource name as the root
+to extract from the returned JSON hash.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="n">response</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="vi">@url</span><span class="p">,</span> <span class="nb">id</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">singularize</span><span class="p">)</span>
+      </pre></div>
+      </td>
+    </tr>
+    <tr id='section-15'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-15">&#182;</a>
+        </div>
+        <p>Responses are of two types, either arrays of hashes or a single hash</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">kind_of?</span> <span class="nb">Array</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>If it&rsquo;s array collect a new array by constructing objects based on the resource
+name capitalized and singularized.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>        <span class="n">response</span><span class="o">.</span><span class="n">collect</span> <span class="k">do</span> <span class="o">|</span><span class="n">obj</span><span class="o">|</span>
+          <span class="n">cls</span> <span class="o">=</span> <span class="no">Scrumy</span><span class="o">.</span><span class="n">const_get</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">capitalize</span><span class="o">.</span><span class="n">singularize</span><span class="p">)</span>
+          <span class="n">cls</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">self</span><span class="p">)</span>
+        <span class="k">end</span>
+      <span class="k">else</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
+        </div>
+        <p>Otherwise create a single new object of the correct type.</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>        <span class="no">Scrumy</span><span class="o">.</span><span class="n">const_get</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">capitalize</span><span class="o">.</span><span class="n">singularize</span><span class="p">)</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="nb">self</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    
+    <span class="k">def</span> <span class="nf">scrumer</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+      <span class="vi">@url</span> <span class="o">=</span> <span class="s2">&quot;https://scrumy.com/api/scrumers/</span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">.json&quot;</span>
+      <span class="no">Scrumer</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">get</span><span class="p">(</span><span class="vi">@url</span><span class="p">,</span> <span class="s1">&#39;scrumer&#39;</span><span class="p">),</span> <span class="nb">self</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">snapshots</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="ss">:current</span><span class="p">)</span>
+      <span class="n">sprint_id</span> <span class="o">=</span> <span class="n">sprint</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span><span class="o">[</span><span class="s1">&#39;id&#39;</span><span class="o">]</span>
+      <span class="vi">@url</span> <span class="o">=</span> <span class="s2">&quot;https://scrumy.com/api/sprints/</span><span class="si">#{</span><span class="n">sprint_id</span><span class="si">}</span><span class="s2">/snapshots.json&quot;</span>
+      <span class="n">get</span><span class="p">(</span><span class="vi">@url</span><span class="p">,</span> <span class="kp">nil</span><span class="p">)</span>
+    <span class="k">end</span>
+    
+    <span class="kp">protected</span>
+    
+      <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+        <span class="k">begin</span>
+          <span class="n">resource</span> <span class="o">=</span> <span class="no">RestClient</span><span class="o">::</span><span class="no">Resource</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="vi">@project</span><span class="p">,</span> <span class="vi">@password</span><span class="p">)</span>
+          <span class="n">resource</span><span class="o">.</span><span class="n">get</span> <span class="p">{</span><span class="o">|</span><span class="n">response</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="o">|</span>
+            <span class="k">case</span> <span class="n">response</span><span class="o">.</span><span class="n">code</span>
+            <span class="k">when</span> <span class="mi">200</span>
+              <span class="n">json</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+              <span class="k">if</span> <span class="n">json</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="nb">Array</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">root</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">collect</span><span class="p">{</span><span class="o">|</span><span class="n">item</span><span class="o">|</span> 
+                  <span class="n">item</span><span class="o">[</span><span class="n">root</span><span class="o">]</span>
+                <span class="p">}</span>
+              <span class="k">else</span>
+                <span class="n">root</span> <span class="p">?</span> <span class="n">json</span><span class="o">[</span><span class="n">root</span><span class="o">]</span> <span class="p">:</span> <span class="n">json</span>
+              <span class="k">end</span>
+            <span class="k">else</span>
+              <span class="n">response</span><span class="o">.</span><span class="n">return!</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+            <span class="k">end</span>
+          <span class="p">}</span>
+        <span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span>
+          <span class="nb">puts</span> <span class="s2">&quot;Problem fetching </span><span class="si">#{</span><span class="vi">@url</span><span class="si">}</span><span class="s2">&quot;</span>
+          <span class="kp">throw</span> <span class="n">e</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+  
+  <span class="k">end</span>
+  
+  <span class="k">class</span> <span class="nc">Object</span>
+    <span class="kp">attr_reader</span> <span class="ss">:id</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+      <span class="vi">@client</span> <span class="o">=</span> <span class="n">client</span>
+      <span class="n">args</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span>
+        <span class="nb">instance_variable_set</span><span class="p">(</span><span class="s2">&quot;@</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">unless</span> <span class="n">v</span><span class="o">.</span><span class="n">nil?</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nb">id</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=~</span> <span class="o">/=</span><span class="vg">$/</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="nb">id</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="sr">/=$/</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>        
+        <span class="nb">instance_variable_set</span><span class="p">(</span><span class="s2">&quot;@</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="nb">instance_variable_get</span><span class="p">(</span><span class="s2">&quot;@</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">belongs_to</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+      <span class="vi">@parent</span> <span class="o">=</span> <span class="n">parent</span>
+    <span class="k">end</span>
+    
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">parent</span>
+      <span class="vi">@parent</span>
+    <span class="k">end</span>
+    
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">lazy_load</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
+      <span class="n">define_method</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="nb">instance_variable_get</span><span class="p">(</span><span class="s2">&quot;@client&quot;</span><span class="p">)</span>
+        <span class="n">ivar</span> <span class="o">=</span> <span class="nb">instance_variable_get</span><span class="p">(</span><span class="s2">&quot;@</span><span class="si">#{</span><span class="nb">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">clss</span> <span class="o">=</span> <span class="no">Scrumy</span><span class="o">.</span><span class="n">const_get</span><span class="p">(</span><span class="nb">method</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">capitalize</span><span class="o">.</span><span class="n">singularize</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="nb">method</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">singularize</span>
+        
+        <span class="k">if</span> <span class="n">ivar</span><span class="o">.</span><span class="n">kind_of?</span> <span class="nb">Array</span>
+          <span class="n">ivar</span><span class="o">.</span><span class="n">collect!</span><span class="p">{</span><span class="o">|</span><span class="n">single</span><span class="o">|</span> <span class="n">clss</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">single</span><span class="o">[</span><span class="n">root</span><span class="o">]</span><span class="p">,</span> <span class="n">client</span><span class="p">)}</span> <span class="k">if</span> <span class="n">ivar</span> <span class="ow">and</span> <span class="n">ivar</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">kind_of?</span><span class="no">Hash</span>
+        <span class="k">elsif</span> <span class="n">ivar</span>
+          <span class="n">ivar</span> <span class="o">=</span> <span class="n">clss</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">ivar</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+        <span class="k">end</span>
+        
+        <span class="k">return</span> <span class="n">ivar</span> <span class="k">if</span> <span class="n">ivar</span>
+        
+        <span class="n">ivar</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="nb">instance_variable_get</span><span class="p">(</span><span class="s2">&quot;@id&quot;</span><span class="p">))</span>
+      <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  
+  <span class="k">class</span> <span class="nc">Sprint</span> <span class="o">&lt;</span> <span class="no">Scrumy</span><span class="o">::</span><span class="no">Object</span>
+    <span class="n">belongs_to</span> <span class="ss">:scrumy</span>
+    <span class="n">lazy_load</span> <span class="ss">:stories</span>
+  <span class="k">end</span>
+  
+  <span class="k">class</span> <span class="nc">Story</span> <span class="o">&lt;</span> <span class="no">Scrumy</span><span class="o">::</span><span class="no">Object</span>
+    <span class="n">belongs_to</span> <span class="ss">:sprint</span>
+    <span class="n">lazy_load</span> <span class="ss">:tasks</span>
+  <span class="k">end</span>
+  
+  <span class="k">class</span> <span class="nc">Task</span> <span class="o">&lt;</span> <span class="no">Scrumy</span><span class="o">::</span><span class="no">Object</span>
+    <span class="n">belongs_to</span> <span class="ss">:story</span>
+    <span class="n">lazy_load</span> <span class="ss">:scrumer</span>
+    
+    <span class="k">def</span> <span class="nf">time</span>
+      <span class="k">return</span> <span class="mi">3</span><span class="o">.</span><span class="mi">0</span> <span class="k">if</span> <span class="o">!</span><span class="p">(</span><span class="vi">@title</span> <span class="o">=~</span> <span class="sr">/\((\d+.*)([hHmM].*)\)/</span><span class="p">)</span>      
+      <span class="n">time</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="vg">$~</span><span class="o">.</span><span class="n">captures</span>
+      <span class="n">unit</span> <span class="o">=~</span> <span class="sr">/m/i</span> <span class="p">?</span> <span class="n">time</span><span class="o">.</span><span class="n">to_f</span> <span class="o">/</span> <span class="mi">60</span><span class="o">.</span><span class="mi">0</span> <span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">to_f</span>      
+    <span class="k">end</span>
+  <span class="k">end</span>
+  
+  <span class="k">class</span> <span class="nc">Scrumer</span> <span class="o">&lt;</span> <span class="no">Scrumy</span><span class="o">::</span><span class="no">Object</span>
+    <span class="n">belongs_to</span> <span class="ss">:scrumy</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
