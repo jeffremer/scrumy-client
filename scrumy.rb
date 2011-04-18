@@ -15,15 +15,14 @@
 # pairs in the JSON hashes become instance variables in the objects.
 require 'json'
 
-
 # Scrumy Client uses [rest-client](https://github.com/archiloque/rest-client)
 # for conveniently retrieving REST resources and handling some of the HTTP at a
 # higher level.
 require 'rest_client'
 
-# We use [ActiveSupport::Inflector](http://as.rubyonrails.org/classes/Inflector.html) to do some of the metaprogramming magic and
-# instantiate classes and create methods dynamically.  Inflector helps to
-# pluralize, singularize, (de)modularize symbols.
+# We use [ActiveSupport::Inflector](http://as.rubyonrails.org/classes/Inflector.html) to do
+# some of the metaprogramming magic and instantiate classes and create methods dynamically.
+# `Inflector` helps to pluralize, singularize, (de)modularize symbols.
 require 'active_support/inflector'
 
 module Scrumy
@@ -40,22 +39,22 @@ module Scrumy
     # This is the heart of the `Scrumy::Client` object.  It provides Ghost Methods via the Ruby
     # chainsaw, `method_missing`.
     
-    # The magic comes from the fact that the Scrumy REST API uses mostly deterministic URLS
-    # based on relationships between models.  Scrums have Sprints, Sprints have Stories,
-    # Stories have Tasks, Tasks have one Scrumer.
     def method_missing(id, *args, &block)
-      # `:current` is a special case, ideally it shouldn't be here and we should probably remove it
-      # for readability's sake, but it does illustrate that the rest of this method works even
-      # though this REST resource URL can be different
-      if args.first == :current
-        @url = "https://scrumy.com/api/scrumies/#{@project}/sprints/#{args.first.to_s}.json"
+      # Figure out what kind of resource we're trying to get.
+      klass = Scrumy::Models.const_get(id.to_s.capitalize.singularize)
+      # Special case for handling id=:current - this really only applies to Sprint resources
+      # but if other resources specified the `current` sub-resources then it should still work.
+      if klass.current_url and args.first==:current
+        @url = format(klass.current_url, :current)
       else
-        # URLs are constructed from parent of the class corresponding the the desired
-        # resource and the method as the resource itself.
-        parent = Scrumy.const_get(id.to_s.capitalize.singularize).parent
-        @url = "https://scrumy.com/api/#{parent.to_s.pluralize}/#{args.first || @project}/#{id}.json"
-      
+        # Otherwise figure out if we're requesting a pluralize or singular resource
+        # A singular that is singularized will be the same as if it wasn't singularized
+        # so that's our tenuous singularity check - this could be more robust.
+        #
+        # The only argument that resources ever take is an ID, so pass the first arg as the ID.
+        @url = format(id.singularize == id ? klass.show_url : klass.list_url, args.first)
       end
+
       # Here we request the resource using the singular of the resource name as the root
       # to extract from the returned JSON hash.
       response = get(@url, id.to_s.singularize)
@@ -64,42 +63,32 @@ module Scrumy
       if response.kind_of? Array
         # If it's array collect a new array by constructing objects based on the resource
         # name capitalized and singularized.
-        response.collect do |obj|
-          cls = Scrumy.const_get(id.to_s.capitalize.singularize)
-          cls.new(obj, self)
+        response.collect do |obj|          
+          klass.new(obj, self)
         end
       else
         # Otherwise create a single new object of the correct type.
-        Scrumy.const_get(id.to_s.capitalize.singularize).new(response, self)
+        klass.new(response, self)
       end
     end
-    
-    # Convenience method for retreiving the current sprint, proxies to `method_missing`
-    # and returns the `Scrumy::Sprint` object for the current sprint.  Current sprints
-    # are complete - that is the have fully populated instance variables for stories,
-    # tasks, and scrumers.
-    def sprint(id=:current)
-      if id == :current
-        method_missing(:sprint, id)
-      else
-        @url = "https://scrumy.com/api/sprints/#{id}.json"
-        Sprint.new(get(@url, 'sprint'), self)
-      end       
-    end
-    
-    # Special case to get a `Scrumy::Scrumer` by `name`.
-    def scrumer(name)
-      @url = "https://scrumy.com/api/scrumers/#{name}.json"
-      Scrumer.new(get(@url, 'scrumer'), self)
+
+    # TODO This grammar should be better
+    # Currently subresources specify special sybmols in their name,
+    # either :project to get @project off the client, or :id to get
+    # the argument passed to the client.
+    def format(url, id=nil)
+      url = url.gsub(':project', @project)
+      url = url.gsub(':id', id.to_s) if id
+      url
     end
 
     # Early implementation to get snapshots, no model for this yet - 
     # it just returns a `Hash` from the `JSON Array`.
-    def snapshots(id=:current)
-      sprint_id = sprint(id.to_s)['id']
-      @url = "https://scrumy.com/api/sprints/#{sprint_id}/snapshots.json"
-      get(@url, nil)
-    end
+    # def snapshots(id=:current)
+    #   sprint_id = sprint(id.to_s)['id']
+    #   @url = "https://scrumy.com/api/sprints/#{sprint_id}/snapshots.json"
+    #   get(@url, nil)
+    # end 
     
     protected
       
@@ -146,121 +135,91 @@ module Scrumy
   end
   
   # This is the abstract `Scrumy::Model` class that all resource models inherit from.  
-  class Model
-    attr_reader :id
+  module Models
+    class Model
+      attr_reader :id
 
-    # When passed a hash the constructor will initialize the object with instance variables
-    # named after the keys in the hash.
-    def initialize(args, client)
-      @client = client
-      args.each do |k,v|
-        instance_variable_set("@#{k}", v) unless v.nil?
-      end
-    end
-
-    # This method missing provides a Ghost Method proxy to access or mutate any instance variable.
-    def method_missing(id, *args, &block)
-      if id.to_s =~ /=$/
-        id = id.to_s.gsub(/=$/,'')        
-        instance_variable_set("@#{id}", args.first)
-      else
-        instance_variable_get("@#{id}")
-      end
-    end
-    
-    # Class methods to specify parent relationships
-    def self.belongs_to(parent)
-      @parent = parent
-    end
-    
-    def self.parent
-      @parent
-    end
-    
-    # Only current Sprints are complete, so other models need to know how ot lazily load their
-    # children.
-    
-    # Specifying a lazy_load key in a subclass defines a new instance method on that class
-    # that uses the client to fetch the right resource and set the appropriate instance variable
-    # correctly.
-    def self.lazy_load(method)
-      define_method(method) {
-        client = instance_variable_get("@client")
-        ivar = instance_variable_get("@#{method}")
-        clss = Scrumy.const_get(method.to_s.capitalize.singularize)
-        root = method.to_s.singularize
-        
-        # First check if the instance variable is already set, but perhaps incorrectly as a Hash
-        # If so, then instantiate the instance variable as the correct type.
-        if ivar.kind_of? Array
-          ivar.collect!{|single| clss.new(single[root], client)} if ivar and ivar.first.kind_of?Hash
-        elsif ivar
-          ivar = clss.new(ivar, client)
+      # When passed a hash the constructor will initialize the object with instance variables
+      # named after the keys in the hash.
+      def initialize(args, client)
+        @client = client
+        args.each do |k,v|
+          instance_variable_set("@#{k}", v) unless v.nil?
         end
+      end
+
+      # This method missing provides a Ghost Method proxy to access or mutate any instance variable.
+      def method_missing(id, *args, &block)
+        if id.to_s =~ /=$/
+          id = id.to_s.gsub(/=$/,'')        
+          instance_variable_set("@#{id}", args.first)
+        else
+          instance_variable_get("@#{id}")
+        end
+      end
+    
+      # Adapter methods for the resource DSL, this provides the
+      # show, list, and current sub-resource defition methods.
+      class << self
+        # For each :show, :list, :current
+        [:show, :list, :current].each{|method|
+          # Create a method that sets a class instance variable to the URL argument
+          send :define_method, method do |url|
+            instance_variable_set "@#{method.to_s}_url", url
+          end
+          # And create an accessor for that URL.
+          send :define_method, "#{method.to_s}_url".to_sym do
+            instance_variable_get "@#{method.to_s}_url"
+          end
+        }
+      end
         
-        # Return if already set, sort of minimal caching.
-        return ivar if ivar
-
-        # Last resort, fetch from the rest client.
-        ivar = client.send(method, instance_variable_get("@id"))
-      }
-    end
-  end
-
-  # Models
-  # ======
-  #
-  # Scrumy defines several models, each of which have a corresponding REST resource.
-  #
-  # * Scrumy (not yet implemented here)
-  # * Sprint
-  # * Story
-  # * Task
-  # * Scrumer
-  # * Snapshot (implemented in client, but not as a model yet)
-  #
-  # For now the models are explicitly defined, but they contain virtually no code
-  # or can act simply as extensions to provide information not contain directly
-  # in the REST resource.
-
-  class Sprint < Scrumy::Model
-    # Specify the parent as `:scrumy` even though we're not specifying it as a 
-    # resource - it'll just act as the root resource.
-    belongs_to :scrumy
-    # `Sprints` have many lazily loaded `Scrumy::Story` objects.
-    lazy_load :stories
+      # Only current Sprints are complete, so other models need to know how ot lazily load their
+      # children.
     
-    # list "scrumies/:project/:sprints"
-    # show "sprints/:id"
-  end
-  
-  class Story < Scrumy::Model
-    # `Scrumy::Story` objects belong to `Scrumy::Sprint` objects
-    belongs_to :sprint
-    # and can lazy load many `Scrumy::Task` objects
-    lazy_load :tasks
-  end
-  
-  class Task < Scrumy::Model
-    # `Scrumy::Task` objects belong to `Scrumy::Story` objects    
-    belongs_to :story
-    # and can lazy load one `Scrumy::Scrumer`
-    lazy_load :scrumer
-    
-    # This defines a helper method Scrumy::Task`#time`
-    def time
-      # Since time is only in the title text this captures it
-      return 3.0 if !(@title =~ /\((\d+.*)([hHmM].*)\)/)      
-      time, unit = $~.captures
-      # and converts it into hours or fractions thereof
-      unit =~ /m/i ? time.to_f / 60.0 : time.to_f      
-    end
-  end
+      # Specifying a lazy_load key in a subclass defines a new instance method on that class
+      # that uses the client to fetch the right resource and set the appropriate instance variable
+      # correctly.
+      def self.lazy_load(method)
+        define_method(method) {
+          client = instance_variable_get("@client")
+          ivar = instance_variable_get("@#{method}")
+          clss = Models.send :const_get, method.to_s.singularize.classify
+          root = method.to_s.singularize
+        
+          # First check if the instance variable is already set, but perhaps incorrectly as a Hash
+          # If so, then instantiate the instance variable as the correct type.
+          if ivar.kind_of? Array
+            ivar.collect!{|single| clss.new(single[root], client)} if ivar and ivar.first.kind_of?Hash
+          elsif ivar 
+            ivar = clss.new(ivar, client)
+          end
+        
+          # Return if already set, sort of minimal caching.
+          return ivar if ivar
 
-  # While `Scrumy::Tasks` have `Scrumy::Scrumers` the actual resource
-  # reside under the root :scrumy resource, so explicitly load it from there
-  # `#belongs_to` and `#lazy_load` relationships don't have to be bidirectional
-  class Scrumer < Scrumy::Model
-    belongs_to :scrumy
+          # Last resort, fetch from the rest client.
+          ivar = client.send(method, instance_variable_get("@id"))
+        }
+      end
+    
+      def self.helper(name, &block)
+        self.send :define_method, name do
+          instance_eval(&block)
+        end
+      end
+    end
   end
 end
+ 
+# This is entry point for the DSL that specifies resources
+def resource(name, &block)
+  # It creates a new class based on the resource name scoped tot he Scrumy module
+  klass = Scrumy::Models.const_set(name.to_s.classify, Class.new(Scrumy::Models::Model))
+  # Then executes the block on the class.  The class provides several class
+  # methods for making instances behave correctly.
+  klass.class_exec &block
+end
+
+# Loads in the default resources, see `resources.rb`
+load('resources.rb')
