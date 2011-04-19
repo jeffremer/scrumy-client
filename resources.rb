@@ -8,7 +8,7 @@
 # * Story
 # * Task
 # * Scrumer
-# * Snapshot (not yet implemented)
+# * Snapshot
 #
 # For now the models are explicitly defined using a resource DSL.
 
