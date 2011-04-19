@@ -73,4 +73,13 @@ describe Scrumy::Client do
     end
   end
   
+  describe '#snapshots' do
+    it "fetches a list of snapshots" do
+      snapshots = @client.snapshots(@client.sprints[1].id)
+      snapshots.each do |snap|
+        snap.should be_an_instance_of Scrumy::Models::Snapshot
+      end
+    end
+  end
+  
 end
