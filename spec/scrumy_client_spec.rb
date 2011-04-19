@@ -7,7 +7,7 @@ describe Scrumy::Client do
     @client = Scrumy::Client.new(credentials['project'], credentials['password'])            
   end
   
-  describe '#scumy' do
+  describe '#scrumy' do
     it "fetches the Scrumy object" do
       scrumy = @client.scrumy
       scrumy.should be_an_instance_of Scrumy::Models::Scrumy
