@@ -47,12 +47,9 @@ module Scrumy
       if klass.current_url and args.first==:current
         @url = format(klass.current_url, :current)
       else
-        # Otherwise figure out if we're requesting a pluralize or singular resource
-        # A singular that is singularized will be the same as if it wasn't singularized
-        # so that's our tenuous singularity check - this could be more robust.
-        #
+        # TODO Figure out a better way of determining if the resource is singular or plural
         # The only argument that resources ever take is an ID, so pass the first arg as the ID.
-        @url = format(id.singularize == id ? klass.show_url : klass.list_url, args.first)
+        @url = format((id.to_s =~ /s$/ ? klass.list_url : klass.show_url), args.first)
       end
 
       # Here we request the resource using the singular of the resource name as the root

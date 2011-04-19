@@ -184,14 +184,11 @@ but if other resources specified the <code>current</code> sub-resources then it 
         <div class="pilwrap">
           <a class="pilcrow" href="#section-13">&#182;</a>
         </div>
-        <p>Otherwise figure out if we&rsquo;re requesting a pluralize or singular resource
-A singular that is singularized will be the same as if it wasn&rsquo;t singularized
-so that&rsquo;s our tenuous singularity check &ndash; this could be more robust.</p>
-
-<p>The only argument that resources ever take is an ID, so pass the first arg as the ID.</p>
+        <p>TODO Figure out a better way of determining if the resource is singular or plural
+The only argument that resources ever take is an ID, so pass the first arg as the ID.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>        <span class="vi">@url</span> <span class="o">=</span> <span class="nb">format</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">singularize</span> <span class="o">==</span> <span class="nb">id</span> <span class="p">?</span> <span class="n">klass</span><span class="o">.</span><span class="n">show_url</span> <span class="p">:</span> <span class="n">klass</span><span class="o">.</span><span class="n">list_url</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
+        <div class='highlight'><pre>        <span class="vi">@url</span> <span class="o">=</span> <span class="nb">format</span><span class="p">((</span><span class="nb">id</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=~</span> <span class="sr">/s$/</span> <span class="p">?</span> <span class="n">klass</span><span class="o">.</span><span class="n">list_url</span> <span class="p">:</span> <span class="n">klass</span><span class="o">.</span><span class="n">show_url</span><span class="p">),</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
       <span class="k">end</span></pre></div>
       </td>
     </tr>
