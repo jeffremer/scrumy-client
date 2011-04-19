@@ -184,18 +184,29 @@ but if other resources specified the <code>current</code> sub-resources then it 
         <div class="pilwrap">
           <a class="pilcrow" href="#section-13">&#182;</a>
         </div>
-        <p>TODO Figure out a better way of determining if the resource is singular or plural
-The only argument that resources ever take is an ID, so pass the first arg as the ID.</p>
+        <p>TODO
+Figure out a better way of determining if the resource is singular or plural</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>        <span class="vi">@url</span> <span class="o">=</span> <span class="nb">format</span><span class="p">((</span><span class="nb">id</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=~</span> <span class="sr">/s$/</span> <span class="p">?</span> <span class="n">klass</span><span class="o">.</span><span class="n">list_url</span> <span class="p">:</span> <span class="n">klass</span><span class="o">.</span><span class="n">show_url</span><span class="p">),</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
-      <span class="k">end</span></pre></div>
+        <div class='highlight'><pre>        </pre></div>
       </td>
     </tr>
     <tr id='section-14'>
       <td class=docs>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>The only argument that resources ever take is an ID, so pass the first arg as the ID.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>        <span class="vi">@url</span> <span class="o">=</span> <span class="nb">format</span><span class="p">((</span><span class="nb">id</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=~</span> <span class="sr">/s$/</span> <span class="p">?</span> <span class="n">klass</span><span class="o">.</span><span class="n">list_url</span> <span class="p">:</span> <span class="n">klass</span><span class="o">.</span><span class="n">show_url</span><span class="p">),</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
+      <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-15'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-15">&#182;</a>
         </div>
         <p>Here we request the resource using the singular of the resource name as the root
 to extract from the returned JSON hash.</p>
@@ -205,10 +216,10 @@ to extract from the returned JSON hash.</p>
       </pre></div>
       </td>
     </tr>
-    <tr id='section-15'>
+    <tr id='section-16'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-15">&#182;</a>
+          <a class="pilcrow" href="#section-16">&#182;</a>
         </div>
         <p>Responses are of two types, either arrays of hashes or a single hash</p>
       </td>
@@ -216,10 +227,10 @@ to extract from the returned JSON hash.</p>
         <div class='highlight'><pre>      <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">kind_of?</span> <span class="nb">Array</span></pre></div>
       </td>
     </tr>
-    <tr id='section-16'>
+    <tr id='section-17'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-16">&#182;</a>
+          <a class="pilcrow" href="#section-17">&#182;</a>
         </div>
         <p>If it&rsquo;s array collect a new array by constructing objects based on the resource
 name capitalized and singularized.</p>
@@ -231,10 +242,10 @@ name capitalized and singularized.</p>
       <span class="k">else</span></pre></div>
       </td>
     </tr>
-    <tr id='section-17'>
+    <tr id='section-18'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-17">&#182;</a>
+          <a class="pilcrow" href="#section-18">&#182;</a>
         </div>
         <p>Otherwise create a single new object of the correct type.</p>
       </td>
@@ -244,13 +255,24 @@ name capitalized and singularized.</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-18'>
+    <tr id='section-19'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-18">&#182;</a>
+          <a class="pilcrow" href="#section-19">&#182;</a>
         </div>
-        <p>TODO This grammar should be better
-Currently subresources specify special sybmols in their name,
+        <p>TODO
+This grammar should be better</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    </pre></div>
+      </td>
+    </tr>
+    <tr id='section-20'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-20">&#182;</a>
+        </div>
+        <p>Currently subresources specify special sybmols in their name,
 either :project to get @project off the client, or :id to get
 the argument passed to the client.</p>
       </td>
@@ -259,32 +281,16 @@ the argument passed to the client.</p>
       <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="s1">&#39;:project&#39;</span><span class="p">,</span> <span class="vi">@project</span><span class="p">)</span>
       <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="s1">&#39;:id&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span> <span class="k">if</span> <span class="nb">id</span>
       <span class="n">url</span>
-    <span class="k">end</span></pre></div>
-      </td>
-    </tr>
-    <tr id='section-19'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-19">&#182;</a>
-        </div>
-        <p>Early implementation to get snapshots, no model for this yet &ndash;
-it just returns a <code>Hash</code> from the <code>JSON Array</code>.
-def snapshots(id=:current)
-  sprint_id = sprint(id.to_s)[&lsquo;id&rsquo;]
-  @url = &ldquo;https://scrumy.com/api/sprints/#{sprint_id}/snapshots.json&rdquo;
-  get(@url, nil)
-end</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre>    
+    <span class="k">end</span>
+    
     <span class="kp">protected</span>
       </pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-21'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-20">&#182;</a>
+          <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
         <p><code>#get</code> provides the nuts and bolts for retrieving resources.  Give it a
 resource URL and a root key and it will return either an array of hashes
@@ -301,10 +307,10 @@ model objects.</p>
         <span class="k">begin</span></pre></div>
       </td>
     </tr>
-    <tr id='section-21'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-21">&#182;</a>
+          <a class="pilcrow" href="#section-22">&#182;</a>
         </div>
         <p>Start by creating a new <code>RestCLient::Resource</code> authenticated with
 the <code>@project</code> name and <code>@password</code>.</p>
@@ -314,10 +320,10 @@ the <code>@project</code> name and <code>@password</code>.</p>
           </pre></div>
       </td>
     </tr>
-    <tr id='section-22'>
+    <tr id='section-23'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-22">&#182;</a>
+          <a class="pilcrow" href="#section-23">&#182;</a>
         </div>
         <p><code>GET</code> the resource</p>
       </td>
@@ -327,10 +333,10 @@ the <code>@project</code> name and <code>@password</code>.</p>
             <span class="k">when</span> <span class="mi">200</span></pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-24'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-23">&#182;</a>
+          <a class="pilcrow" href="#section-24">&#182;</a>
         </div>
         <p>and on success parse the response</p>
       </td>
@@ -338,10 +344,10 @@ the <code>@project</code> name and <code>@password</code>.</p>
         <div class='highlight'><pre>              <span class="n">json</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span></pre></div>
       </td>
     </tr>
-    <tr id='section-24'>
+    <tr id='section-25'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-24">&#182;</a>
+          <a class="pilcrow" href="#section-25">&#182;</a>
         </div>
         <p>If it&rsquo;s <code>Array</code> then collect the hashes and flatten them on the <code>root</code> key.</p>
       </td>
@@ -353,10 +359,10 @@ the <code>@project</code> name and <code>@password</code>.</p>
               <span class="k">else</span></pre></div>
       </td>
     </tr>
-    <tr id='section-25'>
+    <tr id='section-26'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-25">&#182;</a>
+          <a class="pilcrow" href="#section-26">&#182;</a>
         </div>
         <p>Otherwise just return the <code>Hash</code> at the root or the JSON itself directly.</p>
       </td>
@@ -370,10 +376,10 @@ the <code>@project</code> name and <code>@password</code>.</p>
         <span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span></pre></div>
       </td>
     </tr>
-    <tr id='section-26'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-26">&#182;</a>
+          <a class="pilcrow" href="#section-27">&#182;</a>
         </div>
         <p>Rescue and reraise with the current <code>@url</code> for debugging purposes</p>
       </td>
@@ -386,10 +392,10 @@ the <code>@project</code> name and <code>@password</code>.</p>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-27'>
+    <tr id='section-28'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-27">&#182;</a>
+          <a class="pilcrow" href="#section-28">&#182;</a>
         </div>
         <p>This is the abstract <code>Scrumy::Model</code> class that all resource models inherit from.</p>
       </td>
@@ -399,10 +405,10 @@ the <code>@project</code> name and <code>@password</code>.</p>
       <span class="kp">attr_reader</span> <span class="ss">:id</span></pre></div>
       </td>
     </tr>
-    <tr id='section-28'>
+    <tr id='section-29'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-28">&#182;</a>
+          <a class="pilcrow" href="#section-29">&#182;</a>
         </div>
         <p>When passed a hash the constructor will initialize the object with instance variables
 named after the keys in the hash.</p>
@@ -416,10 +422,10 @@ named after the keys in the hash.</p>
       <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-29'>
+    <tr id='section-30'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-29">&#182;</a>
+          <a class="pilcrow" href="#section-30">&#182;</a>
         </div>
         <p>This method missing provides a Ghost Method proxy to access or mutate any instance variable.</p>
       </td>
@@ -435,10 +441,10 @@ named after the keys in the hash.</p>
     </pre></div>
       </td>
     </tr>
-    <tr id='section-30'>
+    <tr id='section-31'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-30">&#182;</a>
+          <a class="pilcrow" href="#section-31">&#182;</a>
         </div>
         <p>Adapter methods for the resource DSL, this provides the
 show, list, and current sub-resource defition methods.</p>
@@ -447,10 +453,10 @@ show, list, and current sub-resource defition methods.</p>
         <div class='highlight'><pre>      <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="nb">self</span></pre></div>
       </td>
     </tr>
-    <tr id='section-31'>
+    <tr id='section-32'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-31">&#182;</a>
+          <a class="pilcrow" href="#section-32">&#182;</a>
         </div>
         <p>For each :show, :list, :current</p>
       </td>
@@ -458,10 +464,10 @@ show, list, and current sub-resource defition methods.</p>
         <div class='highlight'><pre>        <span class="o">[</span><span class="ss">:show</span><span class="p">,</span> <span class="ss">:list</span><span class="p">,</span> <span class="ss">:current</span><span class="o">].</span><span class="n">each</span><span class="p">{</span><span class="o">|</span><span class="nb">method</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-32'>
+    <tr id='section-33'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-32">&#182;</a>
+          <a class="pilcrow" href="#section-33">&#182;</a>
         </div>
         <p>Create a method that sets a class instance variable to the URL argument</p>
       </td>
@@ -471,10 +477,10 @@ show, list, and current sub-resource defition methods.</p>
           <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-33'>
+    <tr id='section-34'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-33">&#182;</a>
+          <a class="pilcrow" href="#section-34">&#182;</a>
         </div>
         <p>And create an accessor for that URL.</p>
       </td>
@@ -487,10 +493,10 @@ show, list, and current sub-resource defition methods.</p>
         </pre></div>
       </td>
     </tr>
-    <tr id='section-34'>
+    <tr id='section-35'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-34">&#182;</a>
+          <a class="pilcrow" href="#section-35">&#182;</a>
         </div>
         <p>Only current Sprints are complete, so other models need to know how ot lazily load their
 children.</p>
@@ -499,10 +505,10 @@ children.</p>
         <div class='highlight'><pre>    </pre></div>
       </td>
     </tr>
-    <tr id='section-35'>
+    <tr id='section-36'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-35">&#182;</a>
+          <a class="pilcrow" href="#section-36">&#182;</a>
         </div>
         <p>Specifying a lazy_load key in a subclass defines a new instance method on that class
 that uses the client to fetch the right resource and set the appropriate instance variable
@@ -518,10 +524,10 @@ correctly.</p>
         </pre></div>
       </td>
     </tr>
-    <tr id='section-36'>
+    <tr id='section-37'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-36">&#182;</a>
+          <a class="pilcrow" href="#section-37">&#182;</a>
         </div>
         <p>First check if the instance variable is already set, but perhaps incorrectly as a Hash
 If so, then instantiate the instance variable as the correct type.</p>
@@ -535,10 +541,10 @@ If so, then instantiate the instance variable as the correct type.</p>
         </pre></div>
       </td>
     </tr>
-    <tr id='section-37'>
+    <tr id='section-38'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-37">&#182;</a>
+          <a class="pilcrow" href="#section-38">&#182;</a>
         </div>
         <p>Return if already set, sort of minimal caching.</p>
       </td>
@@ -546,10 +552,10 @@ If so, then instantiate the instance variable as the correct type.</p>
         <div class='highlight'><pre>          <span class="k">return</span> <span class="n">ivar</span> <span class="k">if</span> <span class="n">ivar</span></pre></div>
       </td>
     </tr>
-    <tr id='section-38'>
+    <tr id='section-39'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-38">&#182;</a>
+          <a class="pilcrow" href="#section-39">&#182;</a>
         </div>
         <p>Last resort, fetch from the rest client.</p>
       </td>
@@ -569,10 +575,10 @@ If so, then instantiate the instance variable as the correct type.</p>
  </pre></div>
       </td>
     </tr>
-    <tr id='section-39'>
+    <tr id='section-40'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-39">&#182;</a>
+          <a class="pilcrow" href="#section-40">&#182;</a>
         </div>
         <p>This is entry point for the DSL that specifies resources</p>
       </td>
@@ -580,10 +586,10 @@ If so, then instantiate the instance variable as the correct type.</p>
         <div class='highlight'><pre><span class="k">def</span> <span class="nf">resource</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span></pre></div>
       </td>
     </tr>
-    <tr id='section-40'>
+    <tr id='section-41'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-40">&#182;</a>
+          <a class="pilcrow" href="#section-41">&#182;</a>
         </div>
         <p>It creates a new class based on the resource name scoped tot he Scrumy module</p>
       </td>
@@ -591,10 +597,10 @@ If so, then instantiate the instance variable as the correct type.</p>
         <div class='highlight'><pre>  <span class="n">klass</span> <span class="o">=</span> <span class="no">Scrumy</span><span class="o">::</span><span class="no">Models</span><span class="o">.</span><span class="n">const_set</span><span class="p">(</span><span class="nb">name</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">classify</span><span class="p">,</span> <span class="no">Class</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Scrumy</span><span class="o">::</span><span class="no">Models</span><span class="o">::</span><span class="no">Model</span><span class="p">))</span></pre></div>
       </td>
     </tr>
-    <tr id='section-41'>
+    <tr id='section-42'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-41">&#182;</a>
+          <a class="pilcrow" href="#section-42">&#182;</a>
         </div>
         <p>Then executes the block on the class.  The class provides several class
 methods for making instances behave correctly.</p>
@@ -604,10 +610,10 @@ methods for making instances behave correctly.</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-42'>
+    <tr id='section-43'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-42">&#182;</a>
+          <a class="pilcrow" href="#section-43">&#182;</a>
         </div>
         <p>Loads in the default resources, see <code>resources.rb</code></p>
 

@@ -47,7 +47,9 @@ module Scrumy
       if klass.current_url and args.first==:current
         @url = format(klass.current_url, :current)
       else
-        # TODO Figure out a better way of determining if the resource is singular or plural
+        # TODO
+        # Figure out a better way of determining if the resource is singular or plural
+        
         # The only argument that resources ever take is an ID, so pass the first arg as the ID.
         @url = format((id.to_s =~ /s$/ ? klass.list_url : klass.show_url), args.first)
       end
@@ -69,7 +71,9 @@ module Scrumy
       end
     end
 
-    # TODO This grammar should be better
+    # TODO
+    # This grammar should be better
+    
     # Currently subresources specify special sybmols in their name,
     # either :project to get @project off the client, or :id to get
     # the argument passed to the client.
@@ -78,14 +82,6 @@ module Scrumy
       url = url.gsub(':id', id.to_s) if id
       url
     end
-
-    # Early implementation to get snapshots, no model for this yet - 
-    # it just returns a `Hash` from the `JSON Array`.
-    # def snapshots(id=:current)
-    #   sprint_id = sprint(id.to_s)['id']
-    #   @url = "https://scrumy.com/api/sprints/#{sprint_id}/snapshots.json"
-    #   get(@url, nil)
-    # end 
     
     protected
       
